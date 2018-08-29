@@ -61,4 +61,33 @@ Ensure that the red LED appears briefly upon pressing one of the buttons. If it 
 
 **Using avrdude**
 
-[coming soon]
+avrdude has the benefit of allowing you to flash the hex file, and therefor not needing to install another library, or possibly spoil the surprises of the challenge.
+
+1. Make sure you you know the location of avrdude and its config file, your programmer id, and the path to the mounted usb device. The config file will come after `-C`, the programmer id after `-c`, and the programmer mount location after `-P`.
+
+In Mac OS, the avrdude will likely be under `/Applications/Arduino.app/Contents/Java/hardware/tools/avr/bin/avrdude` and its config will likely be under `/Applications/Arduino.app/Contents/Java/hardware/tools/avr/etc/avrdude.conf`. If you're using Windows, avrdude will likely be under `C:\Program Files (x86)\Arduino\hardware\tools\avr\bin\avrdude` and its config will likely be under `C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf`.
+
+If you're using an Arduino as ISP, the programmer id is likely `stk500v1`, if you're using a bus pirate, the id is likely `buspirate`. For more examples of programmer ids, see [Ladyada's Avrdude Tutorial](http://www.ladyada.net/learn/avr/avrdude.html).
+
+To find the programmer's port, follow [this guide](https://www.mathworks.com/help/supportpkg/arduinoio/ug/find-arduino-port-on-windows-mac-and-linux.html), or something similar.
+
+2. Burn the bootloader. This script will setup the attiny84 bootloader and configure it to use the 1MHz internal clock:
+```
+/path/to/avrdude -C /path/to/avrdude.conf -v -p attiny84 -c stk500v1 -P /path/to/usbport -b 19200 -e -U efuse:w:0xff:m -U hfuse:w:0xdf:m -U lfuse:w:0x62:m
+```
+
+3. Load and run the setup sketch:
+```
+/path/to/avrdude -C /path/to/avrdude.conf -v -V -p attiny84 -c stk500v1 -P /path/to/usbport -b 19200 -U flash:w:/path/to/DC26_HHV_RE_setup.1MHz.hex:i
+```
+
+This will configure the challenges board before loading the challenge. The red LED should come on once this step is finished (if the LED hasn't come on after a couple seconds, it's likely something went wrong).
+
+4. Load and run the challenge sketch:
+```
+/path/to/avrdude -C /path/to/avrdude.conf -v -V -p attiny84 -c stk500v1 -P /path/to/usbport -b 19200 -U flash:w:/path/to/DC26_HHV_RE.1MHz.hex:i
+```
+
+Ensure that the red LED appears briefly upon pressing one of the buttons. If it does, you're good to go! Disconnect the programming wires and Arduino power before putting a battery into the battery holder.
+
+6. Remove the solder bridge on the two pads to the bottom right of the buttons.
